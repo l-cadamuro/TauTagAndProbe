@@ -8,7 +8,8 @@ ROOT.gSystem.Load('libRooFit')
 
 class TurnOn:
     def __init__(self, **args):
-        self.name        = args.get("Name", "turnon")
+        self.name        = args.get("Name", "turnon")     
+        #self.legend      = args.get("Legend","")
         self.legend      = args.get("Legend","Turn-on")
         self.histo       = args.get("Histo", None)
         self.fit         = args.get("Fit", None)
@@ -27,11 +28,12 @@ class TurnOnPlot:
         self.turnons = []
         self.plotDir = "plots/"
         self.xRange = (10, 120)
-        self.xTitle = "p_{T}^{offl} [GeV]"
+        self.xTitle = "Offline p_{T}^{#tau} [GeV]"
         #self.legendPosition = (0.6,0.2,0.9,0.4)
         self.legendPosition = (0.4,0.2,0.9,0.6)
         self.setPlotStyle()
-        self.triggerName = args.get("TriggerName", "Turn-On")
+        #self.triggerName = args.get("TriggerName", "Turn-On")
+        self.triggerName = args.get("TriggerName", "")
 
     def addTurnOn(self, turnon):
         self.turnons.append(turnon)
@@ -39,28 +41,30 @@ class TurnOnPlot:
     def plot(self):
         canvas = ROOT.TCanvas("c_"+self.name, self.name, 800, 800)
         canvas.SetGrid()
+        canvas.SetLogx()
         hDummy = ROOT.TH1F("hDummy_"+self.name, self.name, 1, self.xRange[0], self.xRange[1])
         hDummy.SetAxisRange(0, 1.05, "Y")
         hDummy.SetXTitle(self.xTitle)
+        #hDummy.SetYTitle("Test")
         hDummy.SetYTitle("Efficiency")
         hDummy.Draw()
 
 
-        cmsTextFont     = 61  # font of the "CMS" label
-        cmsTextSize   = 0.05  # font size of the "CMS" label
+        cmsTextFont     = 42  # font of the "CMS" label
+        cmsTextSize   = 0.76*0.05  # font size of the "CMS" label
         extraTextFont   = 52     # for the "preliminary"
-        extraTextSize   = 0.76 * cmsTextSize # for the "preliminary"
-        xpos  = 0.177
-        ypos  = 0.89
+        extraTextSize   = cmsTextSize # for the "preliminary"
+        xpos  = 0.16
+        ypos  = 0.95
 
-        CMSbox       = ROOT.TLatex  (xpos, ypos         , "CMS")
-        extraTextBox = ROOT.TLatex  (xpos, ypos - 0.05 , "#splitline{preliminary}{2016}")
+        CMSbox       = ROOT.TLatex  (xpos, ypos         , "#bf{CMS} #it{Preliminary}")
+        extraTextBox = ROOT.TLatex  (xpos, ypos - 0.05 , "#it{Preliminary}")
         CMSbox.SetNDC()
         extraTextBox.SetNDC()
         CMSbox.SetTextSize(cmsTextSize)
         CMSbox.SetTextFont(cmsTextFont)
         CMSbox.SetTextColor(ROOT.kBlack)
-        CMSbox.SetTextAlign(13)
+        CMSbox.SetTextAlign(11)
         extraTextBox.SetTextSize(extraTextSize)
         extraTextBox.SetTextFont(extraTextFont)
         extraTextBox.SetTextColor(ROOT.kBlack)
@@ -76,7 +80,7 @@ class TurnOnPlot:
         # lumi_num = float(cfg.readOption ("general::lumi"))
         # lumi_num = lumi_num/1000. # from pb-1 to fb-1
         # lumi = "%.1f fb^{-1} (13 TeV)" % lumi_num
-        lumi = "12.9 fb^{-1} (13 TeV)"
+        lumi = "5.8 fb^{-1} (13 TeV, 2017)"
         lumibox = ROOT.TLatex  (0.953, 0.95, lumi)
         lumibox.SetNDC()
         lumibox.SetTextAlign(31)
@@ -87,6 +91,7 @@ class TurnOnPlot:
         legend = ROOT.TLegend(self.legendPosition[0],self.legendPosition[1],self.legendPosition[2],self.legendPosition[3])
         legend.SetTextFont(42)
         legend.SetFillColor(0)
+	legend.SetTextSize(0.75*extraTextSize)
         '''legend1 = ROOT.TLegend(0.14, 0.80, 0.80, 1.02)
         legend1.SetBorderSize(0)
         legend1.SetTextFont(62)
@@ -114,9 +119,9 @@ class TurnOnPlot:
             legend.AddEntry(histo, turnon.legend, "pe")
             legend.Draw()
             #if self.name=="turnon_Stage1_Stage2_EB":
-        triggerNameBox.Draw()
+        #triggerNameBox.Draw()
         CMSbox.Draw()
-        extraTextBox.Draw()
+        #extraTextBox.Draw()
         lumibox.Draw()
         #print ("DEBUG: " + self.plotDir+"/"+self.name+".eps")
         canvas.Print(self.plotDir+"/"+self.name+".pdf", "pdf")

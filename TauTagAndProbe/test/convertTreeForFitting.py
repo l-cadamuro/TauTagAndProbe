@@ -2,11 +2,12 @@ from ROOT import *
 import numpy as n
 
 # the hadd of all the output ntuples
-fname = 'NTuple_10Ago_Riccardo.root'
-pt = [20, 26, 30, 34]
-numberOfHLTTriggers = 6
+fname = "/data_CMS/cms/strebler/TauHLT/TagAndProbeTrees/TagAndProbe_VBF/NTuple_MC_VBF_BadPixGT_TandP.root"
+#pt = [20, 26, 30, 34]
+pt = [20, 26, 30, 32, 34]
+numberOfHLTTriggers = 19
 
-saveOnlyOS = False # False; save only OS, True: save both and store weight for bkg sub
+saveOnlyOS = True # False; save only OS, True: save both and store weight for bkg sub
 
 #######################################################
 fIn = TFile.Open(fname)
@@ -34,7 +35,7 @@ for i in range (0, numberOfHLTTriggers):
     name = ("hasHLTPath_" + str(i))
     tOut.Branch(name, hltPathTriggered_OS[i], name+"/I")
 
-tOut.Branch("isoHLT", hltPathTriggered_OS[6], name+"/I")
+#tOut.Branch("isoHLT", hltPathTriggered_OS[6], name+"/I")
 
 tOut.Branch("bkgSubW", bkgSubW, "bkgSubW/D")
 
@@ -70,15 +71,19 @@ for ev in range (0, nentries):
     triggerBits = tIn.tauTriggerBits
     HLTpt = tIn.hltPt
     for bitIndex in range(0, numberOfHLTTriggers):
-        if ((triggerBits >> bitIndex) & 1) == 1:
-            hltPathTriggered_OS[bitIndex][0] = 1
+        if bitIndex in range(6, 12):            
+            if ((triggerBits >> bitIndex) & 1) == 1 and (L1pt>=32) and (L1iso):
+                hltPathTriggered_OS[bitIndex][0] = 1
+        else:
+            if ((triggerBits >> bitIndex) & 1) == 1:
+                hltPathTriggered_OS[bitIndex][0] = 1
 
     bkgSubW[0] = 1. if tIn.isOS else -1.
 
-    if (L1pt > 26) and (L1iso) and (HLTpt > 32) and (((triggerBits >> 2) & 1) == 1):
-        hltPathTriggered_OS[6][0] = 1
-    else:
-        hltPathTriggered_OS[6][0] = 0
+    #if (L1pt > 26) and (L1iso) and (HLTpt > 32) and (((triggerBits >> 2) & 1) == 1):
+    #    hltPathTriggered_OS[6][0] = 1
+    #else:
+    #    hltPathTriggered_OS[6][0] = 0
 
     tOut.Fill()
 

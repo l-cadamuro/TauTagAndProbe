@@ -49,7 +49,7 @@ filelist = open("VBFHToTauTau_M125_13TeV_powheg_pythia8_RunIISummer16MiniAODv2-F
 #folder = "Certification_20Oct16"
 #folder = "Certification_27Oct16"
 
-folder = "MC_MiniAOD_11_05_17"
+folder = "MC_MiniAOD_multipleTaus_16_05_17"
 #folder = "Run2016H-PromptReco-v2_141116_282092_noBtagVeto"
 #folder = "Run2016H-PromptReco-v3_141116"
 #folder = "Run2016H-PromptReco-v2_141116"
@@ -88,7 +88,7 @@ for idx, block in enumerate(fileblocks):
     if not isMC:
         cmsRun = "cmsRun test.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " JSONfile="+JSONfile + " >& " + outLogName
     else:
-        cmsRun = "cmsRun test_noTagAndProbe.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName        
+        cmsRun = "cmsRun test_noTagAndProbe_multipleTaus.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName        
 
     skimjob = open (outJobName, 'w')
     skimjob.write ('#!/bin/bash\n')

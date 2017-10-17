@@ -23,14 +23,20 @@ ClassImp(FuncCB)
 		 RooAbsReal& _sigma,
 		 RooAbsReal& _alpha,
 		 RooAbsReal& _n,
-		 RooAbsReal& _norm) :
+		 RooAbsReal& _norm,
+		 RooAbsReal& _mturn,
+		 RooAbsReal& _p,
+		 RooAbsReal& _width) :
     RooAbsReal(name,title), 
     m("m","m",this,_m),
     m0("m0","m0",this,_m0),
     sigma("sigma","sigma",this,_sigma),
     alpha("alpha","alpha",this,_alpha),
     n("n","n",this,_n),
-    norm("norm","norm",this,_norm)
+    norm("norm","norm",this,_norm),
+    mturn("mturn","mturn",this,_mturn),
+    p("p","p",this,_p),
+    width("width","width",this,_width)
 { 
 } 
 
@@ -42,7 +48,10 @@ FuncCB::FuncCB(const FuncCB& other, const char* name) :
   sigma("sigma",this,other.sigma),
   alpha("alpha",this,other.alpha),
   n("n",this,other.n),
-  norm("norm",this,other.norm)
+  norm("norm",this,other.norm),
+  mturn("mturn",this,other.mturn),
+  p("p",this,other.p),
+  width("width",this,other.width)
 { 
 } 
 
@@ -84,11 +93,18 @@ Double_t FuncCB::evaluate() const
    Double_t aireDroite = ( a * 1/TMath::Power(absAlpha - b,n-1)) / (n - 1);
    Double_t aire = aireGauche + aireDroite;
 
+   //Arctan part
+   Double_t Linear = 0.;
+   if(m<mturn) Linear = p;
+   if(m>=mturn) Linear = pow(ApproxErf((m-mturn)/5.),2)*2.*(1.-p)/3.14159*TMath::ATan(3.14159/80.*width*(m-mturn))+p;
+
    if ( t <= absAlpha ){
-     return norm * (1 + ApproxErf( t / sqrt2 )) * sqrtPiOver2 / aire ;
+     //return norm * (1 + ApproxErf( t / sqrt2 )) * sqrtPiOver2 / aire ;
+     return norm * (1 + ApproxErf( t / sqrt2 )) * sqrtPiOver2 / aire * Linear ;
    }
    else{
-     return norm * (aireGauche +  a * (1/TMath::Power(t-b,n-1) - 1/TMath::Power(absAlpha - b,n-1)) / (1 - n)) / aire ;
+     //return norm * (aireGauche +  a * (1/TMath::Power(t-b,n-1) - 1/TMath::Power(absAlpha - b,n-1)) / (1 - n)) / aire ;
+     return norm * (aireGauche +  a * (1/TMath::Power(t-b,n-1) - 1/TMath::Power(absAlpha - b,n-1)) / (1 - n)) / aire * Linear ;
    }
   
  } 

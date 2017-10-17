@@ -20,7 +20,10 @@ public:
 	      RooAbsReal& _sigma,
 	      RooAbsReal& _alpha,
 	      RooAbsReal& _n,
-	      RooAbsReal& _norm);
+	      RooAbsReal& _norm,
+	      RooAbsReal& _mturn,
+	      RooAbsReal& _p,
+	      RooAbsReal& _width);
   FuncCB(const FuncCB& other, const char* name=0) ;
  
   Double_t evaluate() const;
@@ -37,7 +40,9 @@ protected:
   RooRealProxy alpha ;
   RooRealProxy n ;
   RooRealProxy norm ;
-  
+  RooRealProxy mturn;
+  RooRealProxy p;
+  RooRealProxy width;  
 
 private:
 

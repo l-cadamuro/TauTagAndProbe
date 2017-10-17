@@ -36,6 +36,7 @@ class TauTagAndProbeFilter : public edm::EDFilter {
         EDGetTokenT<pat::TauRefVector>   _tausTag;
         EDGetTokenT<pat::MuonRefVector>  _muonsTag;
         EDGetTokenT<pat::METCollection>  _metTag;
+        bool _useMassCuts;
 };
 
 TauTagAndProbeFilter::TauTagAndProbeFilter(const edm::ParameterSet & iConfig) :
@@ -45,6 +46,7 @@ _metTag   (consumes<pat::METCollection> (iConfig.getParameter<InputTag>("met")))
 {
     produces <pat::TauRefVector>  (); // probe
     produces <pat::MuonRefVector> (); // tag
+    _useMassCuts = iConfig.getParameter<bool>("useMassCuts");
 }
 
 TauTagAndProbeFilter::~TauTagAndProbeFilter()
@@ -52,8 +54,16 @@ TauTagAndProbeFilter::~TauTagAndProbeFilter()
 
 bool TauTagAndProbeFilter::filter(edm::Event & iEvent, edm::EventSetup const& iSetup)
 {
-    auto_ptr<pat::MuonRefVector> resultMuon ( new pat::MuonRefVector );
-    auto_ptr<pat::TauRefVector>  resultTau  ( new pat::TauRefVector  );
+    int _indexevents = iEvent.id().event();
+    // int _runNumber = iEvent.id().run();
+    // int _lumi = iEvent.luminosityBlock();
+
+    //cout<<"EventNumber = "<<_indexevents<<endl;
+
+    std::unique_ptr<pat::MuonRefVector> resultMuon ( new pat::MuonRefVector );
+    std::unique_ptr<pat::TauRefVector>  resultTau  ( new pat::TauRefVector  );
+    // auto_ptr<pat::MuonRefVector> resultMuon ( new pat::MuonRefVector );
+    // auto_ptr<pat::TauRefVector>  resultTau  ( new pat::TauRefVector  );
 
     // ---------------------   search for the tag in the event --------------------
     Handle<pat::MuonRefVector> muonHandle;
@@ -61,7 +71,8 @@ bool TauTagAndProbeFilter::filter(edm::Event & iEvent, edm::EventSetup const& iS
 
     // reject events with more than 1 mu in the event (reject DY)
     // or without mu (should not happen in SingleMu dataset)
-    if (muonHandle->size() != 1) return false;
+    //if (muonHandle->size() != 1) return false;
+
 
     // for loop is now dummy, leaving it for debug
     // for (size_t imu = 0; imu < muonHandle->size(); ++imu )
@@ -76,9 +87,15 @@ bool TauTagAndProbeFilter::filter(edm::Event & iEvent, edm::EventSetup const& iS
     Handle<pat::METCollection> metHandle;
     iEvent.getByToken (_metTag, metHandle);
     const pat::MET& met = (*metHandle)[0];
+    /*cout<<"met.pt() = "<<met.pt()<<endl;
+    cout<<"met.uncorPt() = "<<met.uncorPt()<<endl;
+    cout<<"met.uncorPhi() = "<<met.uncorPhi()<<endl;*/
 
     float mt = ComputeMT (mu->p4(), met);
-    if (mt >= 30) return false; // reject W+jets
+
+    //cout<<"mt = "<<mt<<endl;
+
+    if (mt >= 30 && _useMassCuts) return false; // reject W+jets
 
     Handle<pat::TauRefVector> tauHandle;
     iEvent.getByToken (_tausTag, tauHandle);
@@ -91,7 +108,7 @@ bool TauTagAndProbeFilter::filter(edm::Event & iEvent, edm::EventSetup const& iS
     {
         const pat::TauRef tau = (*tauHandle)[itau] ;
         math::XYZTLorentzVector pSum = mu->p4() + tau->p4();
-        if (pSum.mass() <= 40 || pSum.mass() >= 80) continue; // visible mass in (40, 80)
+        if (_useMassCuts && (pSum.mass() <= 40 || pSum.mass() >= 80)) continue; // visible mass in (40, 80)
         if (deltaR(*tau, *mu) < 0.5) continue;
 
         // max pt
@@ -141,16 +158,23 @@ bool TauTagAndProbeFilter::filter(edm::Event & iEvent, edm::EventSetup const& iS
 
     resultTau->push_back (tau);
     resultMuon->push_back (mu);
-    iEvent.put(resultMuon);
-    iEvent.put(resultTau);
+    iEvent.put(std::move(resultMuon));
+    iEvent.put(std::move(resultTau));
+    // iEvent.put(resultMuon);
+    // iEvent.put(resultTau);
 
     return true;
 }
 
 float TauTagAndProbeFilter::ComputeMT (math::XYZTLorentzVector visP4, const pat::MET& met)
 {
-    math::XYZTLorentzVector METP4 (met.px(), met.py(), 0, met.pt());
-    float scalSum = met.pt() + visP4.pt();
+  math::XYZTLorentzVector METP4 (met.uncorPt()*TMath::Cos(met.uncorPhi()), met.uncorPt()*TMath::Sin(met.uncorPhi()), 0, met.uncorPt());
+  //cout<<"MET Px = "<<met.uncorPt()*TMath::Cos(met.uncorPhi())<<endl;
+    float scalSum = met.uncorPt() + visP4.pt();
+
+    // math::XYZTLorentzVector METP4 (met.px(), met.py(), 0, met.pt());
+    // float scalSum = met.pt() + visP4.pt();
+
     math::XYZTLorentzVector vecSum (visP4);
     vecSum += METP4;
     float vecSumPt = vecSum.pt();

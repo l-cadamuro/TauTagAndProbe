@@ -52,12 +52,18 @@ class TurnonFit
         void setSelectionVars(const std::vector<std::string>& selectionVars) {m_selectionVars = selectionVars;}
         void setSelection(const std::string& selection) {m_selection = selection;}
         void setWeightVar(const std::string& weightVar) {m_weightVar = weightVar;}
-        void setBinning(const std::vector<double>& binning) {m_binning = binning;}
+        void setBinning(const std::vector<double>& binning) {m_binning = binning;
+	  std::cout<<"in include:"<<std::endl;
+	  for(UInt_t iBin = 0 ; iBin < m_binning.size() ; ++iBin) std::cout<<m_binning[iBin]<<std::endl;
+	}
         void setCrystalBall(double max, double max0, double max1,
-                double alpha, double alpha0, double alpha1,
-                double n, double n0, double n1,
-                double mean, double mean0, double mean1,
-                double sigma, double sigma0, double sigma1);
+			    double alpha, double alpha0, double alpha1,
+			    double n, double n0, double n1,
+			    double mean, double mean0, double mean1,
+			    double sigma, double sigma0, double sigma1,
+			    double mturn, double mturn0,double mturn1,
+			    double p, double p0, double p1,
+			    double width, double width0, double width1);
         void setNCPU(int nCPU) {m_nCPU = nCPU;}
         void setNoFit(bool noFit) {m_noFit = noFit;}
 
@@ -83,6 +89,9 @@ class TurnonFit
         RooRealVar m_n;
         RooRealVar m_mean;
         RooRealVar m_sigma;
+        RooRealVar m_mturn;
+	RooRealVar m_p;
+	RooRealVar m_width;
         
         FuncCB* m_function;
         RooPlot* m_plot;

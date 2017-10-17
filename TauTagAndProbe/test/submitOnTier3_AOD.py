@@ -41,7 +41,8 @@ njobs = 200
 #filelist = open("fileList_Run2016H-PromptReco-v2_141116.txt")
 #filelist = open("fileList_Run2016H-PromptReco-v3_141116.txt")
 #filelist = open("fileList_Run2016H-PromptReco-v2_141116_Run282092.txt")
-filelist = open("VBFHToTauTau_M125_13TeV_powheg_pythia8_RunIISummer16MiniAODv2-FlatPU28to62HcalNZSRAW_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1.txt")
+#filelist = open("VBFHToTauTau_M125_13TeV_powheg_pythia8_RunIISummer16MiniAODv2-FlatPU28to62HcalNZSRAW_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1.txt")
+filelist = open("VBF_90X_RECO.txt")
 
 #filelist = open("fileList_MC_RECO.txt")
 #folder = "MC_RECO_9x9"
@@ -49,7 +50,8 @@ filelist = open("VBFHToTauTau_M125_13TeV_powheg_pythia8_RunIISummer16MiniAODv2-F
 #folder = "Certification_20Oct16"
 #folder = "Certification_27Oct16"
 
-folder = "MC_MiniAOD_11_05_17"
+#folder = "MC_MiniAOD_11_05_17"
+folder = "MC_AOD_HTT_90X_13_06_17"
 #folder = "Run2016H-PromptReco-v2_141116_282092_noBtagVeto"
 #folder = "Run2016H-PromptReco-v3_141116"
 #folder = "Run2016H-PromptReco-v2_141116"
@@ -88,7 +90,7 @@ for idx, block in enumerate(fileblocks):
     if not isMC:
         cmsRun = "cmsRun test.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " JSONfile="+JSONfile + " >& " + outLogName
     else:
-        cmsRun = "cmsRun test_noTagAndProbe.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName        
+        cmsRun = "cmsRun test_noTagAndProbe_AOD.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName        
 
     skimjob = open (outJobName, 'w')
     skimjob.write ('#!/bin/bash\n')
