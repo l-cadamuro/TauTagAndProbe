@@ -28,7 +28,9 @@
 <use name="CommonTools/UtilAlgos"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="HLTrigger/HLTcore"/>
-
+<use name="FastSimulation/BaseParticlePropagator"/>
+<use name="FastSimulation/Particle"/>
+<use name="SimGeneral/HepPDTRecord"/>
 <flags EDM_PLUGIN="1"/>
 
 <!-- <library name="TauTagAndProbePlugins" file="*.cc">

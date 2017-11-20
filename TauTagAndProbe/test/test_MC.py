@@ -29,7 +29,8 @@ options.parseArguments()
 if not isMC: # will use 80X
     from Configuration.AlCa.autoCond import autoCond
     # process.GlobalTag.globaltag = '80X_dataRun2_Prompt_v8'
-    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
+    # process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6' #MC 25 ns miniAODv2
     process.load('TauTagAndProbe.TauTagAndProbe.tagAndProbe_cff')
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
@@ -94,7 +95,7 @@ process.p = cms.Path(
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # Adding ntuplizer
 process.TFileService=cms.Service('TFileService',fileName=cms.string(options.outputFile))

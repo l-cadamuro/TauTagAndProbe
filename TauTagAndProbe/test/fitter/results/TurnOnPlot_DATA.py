@@ -50,21 +50,27 @@ class TurnOnPlot:
         cmsTextSize   = 0.05  # font size of the "CMS" label
         extraTextFont   = 52     # for the "preliminary"
         extraTextSize   = 0.76 * cmsTextSize # for the "preliminary"
-        xpos  = 0.177
-        ypos  = 0.89
+        # xpos  = 0.177
+        # ypos  = 0.89
+        xpos  = 0.25
+        ypos  = 0.95
 
+        # CMSbox       = ROOT.TLatex  (xpos, ypos         , "CMS")
+        # extraTextBox = ROOT.TLatex  (xpos, ypos - 0.05 , "#splitline{preliminary}{2016}")
         CMSbox       = ROOT.TLatex  (xpos, ypos         , "CMS")
-        extraTextBox = ROOT.TLatex  (xpos, ypos - 0.05 , "#splitline{preliminary}{2016}")
+        extraTextBox = ROOT.TLatex  (xpos+0.265, ypos, "preliminary 2016")
         CMSbox.SetNDC()
         extraTextBox.SetNDC()
         CMSbox.SetTextSize(cmsTextSize)
         CMSbox.SetTextFont(cmsTextFont)
         CMSbox.SetTextColor(ROOT.kBlack)
-        CMSbox.SetTextAlign(13)
+        # CMSbox.SetTextAlign(13)
+        CMSbox.SetTextAlign(31)
         extraTextBox.SetTextSize(extraTextSize)
         extraTextBox.SetTextFont(extraTextFont)
         extraTextBox.SetTextColor(ROOT.kBlack)
-        extraTextBox.SetTextAlign(13)
+        # extraTextBox.SetTextAlign(13)
+        extraTextBox.SetTextAlign(31)
 
         triggerNameBox = ROOT.TLatex(0.15, 0.95, self.triggerName)
         triggerNameBox.SetNDC()
@@ -76,7 +82,7 @@ class TurnOnPlot:
         # lumi_num = float(cfg.readOption ("general::lumi"))
         # lumi_num = lumi_num/1000. # from pb-1 to fb-1
         # lumi = "%.1f fb^{-1} (13 TeV)" % lumi_num
-        lumi = "12.9 fb^{-1} (13 TeV)"
+        lumi = "35.9 fb^{-1} (13 TeV)"
         lumibox = ROOT.TLatex  (0.953, 0.95, lumi)
         lumibox.SetNDC()
         lumibox.SetTextAlign(31)
@@ -87,6 +93,8 @@ class TurnOnPlot:
         legend = ROOT.TLegend(self.legendPosition[0],self.legendPosition[1],self.legendPosition[2],self.legendPosition[3])
         legend.SetTextFont(42)
         legend.SetFillColor(0)
+        legend.SetFillColor(ROOT.kWhite)
+        legend.SetBorderSize(0)
         '''legend1 = ROOT.TLegend(0.14, 0.80, 0.80, 1.02)
         legend1.SetBorderSize(0)
         legend1.SetTextFont(62)
@@ -111,10 +119,10 @@ class TurnOnPlot:
             histo.Draw("p same")
             fit.Draw("l same")
             # legends
-            legend.AddEntry(histo, turnon.legend, "pe")
+            legend.AddEntry(histo, turnon.legend, "lpe")
             legend.Draw()
             #if self.name=="turnon_Stage1_Stage2_EB":
-        triggerNameBox.Draw()
+        # triggerNameBox.Draw()
         CMSbox.Draw()
         extraTextBox.Draw()
         lumibox.Draw()

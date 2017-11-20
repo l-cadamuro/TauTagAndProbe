@@ -72,11 +72,13 @@ HLTLIST = cms.VPSet(
     )
 )
 
+## I need not to throw an exception because some paths were disables during the data taking
 hltFilter = hlt.hltHighLevel.clone(
     TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
-    HLTPaths = ['HLT_IsoMu22_v*'],
+    # HLTPaths = ['HLT_IsoMu22_v*'],
+    HLTPaths = ['HLT_IsoMu22_eta2p1_v*', 'HLT_IsoTkMu22_eta2p1_v*', 'HLT_IsoMu22_v*', 'HLT_IsoTkMu22_v*'],
     andOr = cms.bool(True), # how to deal with multiple triggers: True (OR) accept if ANY is true, False (AND) accept if ALL are true
-    throw = cms.bool(True) #if True: throws exception if a trigger path is invalid
+    throw = cms.bool(False) #if True: throws exception if a trigger path is invalid
 )
 
 ## only events where slimmedMuons has exactly 1 muon
@@ -89,7 +91,7 @@ goodMuons = cms.EDFilter("PATMuonRefSelector",
         src = cms.InputTag("slimmedMuons"),
         cut = cms.string(
                 'pt > 24 && abs(eta) < 2.1 ' # kinematics
-                '&& ( (pfIsolationR04().sumChargedHadronPt + max(pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - 0.5 * pfIsolationR04().sumPUPt, 0.0)) / pt() ) < 0.1 ' # isolation
+                '&& ( (pfIsolationR04().sumChargedHadronPt + max(pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - 0.5 * pfIsolationR04().sumPUPt, 0.0)) / pt() ) < 0.15 ' # isolation
                 '&& isLooseMuon()' # quality -- medium muon
         ),
         filter = cms.bool(True)
@@ -114,7 +116,7 @@ bjets = cms.EDFilter("PATJetRefSelector",
         src = cms.InputTag("slimmedJets"),
         cut = cms.string(
                 'pt > 20 && abs(eta) < 2.4 ' #kinematics
-                '&& bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.800' # b tag with medium WP
+                '&& bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.8484' # b tag with medium WP
         ),
         filter = cms.bool(True)
 )
@@ -133,7 +135,8 @@ Ntuplizer = cms.EDAnalyzer("Ntuplizer",
     triggerSet = cms.InputTag("selectedPatTrigger"),
     triggerResultsLabel = cms.InputTag("TriggerResults", "", "HLT"),
     L1Tau = cms.InputTag("caloStage2Digis", "Tau", "RECO"),
-    Vertexes = cms.InputTag("offlineSlimmedPrimaryVertices")
+    Vertexes = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    rho = cms.InputTag("fixedGridRhoFastjetAll")
 )
 
 TAndPseq = cms.Sequence(

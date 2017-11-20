@@ -2,7 +2,9 @@ from ROOT import *
 import numpy as n
 
 # the hadd of all the output ntuples
-fname = 'NTuple_10Ago_Riccardo.root'
+# fname = 'NTuple_10Ago_Riccardo.root'
+# fname = 'SingleMuon_all2016_7FebReReco_wCharge_wCaloPos_wDecayMode/SingleMuon_all2016_7FebReReco_wCharge_wCaloPos_wDecayMode.root'
+fname = '/home/llr/cms/cadamuro/TauTAndP2016FullData/CMSSW_8_0_25/src/TauTagAndProbe/TauTagAndProbe/test/DY_LO_inclusive.root'
 pt = [20, 26, 30, 34]
 numberOfHLTTriggers = 6
 
@@ -56,7 +58,9 @@ for ev in range (0, nentries):
     for i in range (0, numberOfHLTTriggers):
         hltPathTriggered_OS[i][0] = 0
 
-    L1iso = True if tIn.l1tIso == 1 else False
+    # L1iso = True if tIn.l1tIso == 1 else False
+    L1iso = True if tIn.l1tIso > 0 else False
+
     L1pt = tIn.l1tPt
     for i in range(0, len(pt)):
         # print L1pt, pt[i]

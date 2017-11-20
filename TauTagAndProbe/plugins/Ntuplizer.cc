@@ -27,6 +27,11 @@
 #include "DataFormats/L1Trigger/interface/Tau.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 
+// for track propagator - use methods from fastsim
+#include "FastSimulation/BaseParticlePropagator/interface/BaseParticlePropagator.h"
+#include "FastSimulation/Particle/interface/RawParticle.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+
 
 #include "tParameterSet.h"
 
@@ -63,6 +68,10 @@ class Ntuplizer : public edm::EDAnalyzer {
         void Initialize();
         bool hasFilters(const pat::TriggerObjectStandAlone&  obj , const std::vector<std::string>& filtersToLookFor);
 
+        std::pair<float,float> getEtaPhiAtEcalEntrance(const pat::TauRef& tau, const edm::EventSetup &iSetup);
+        // bool atECalEntrnce(const edm::EventSetup &iSetup, const pat::PackedCandidate &cand, math::XYZPoint &pos, math::XYZTLorentzVector &mom);
+        bool atECalEntrnce(const edm::EventSetup &iSetup, const reco::Candidate &cand, math::XYZPoint &pos, math::XYZTLorentzVector &mom);
+
         TTree *_tree;
         TTree *_triggerNamesTree;
         std::string _treeName;
@@ -75,6 +84,11 @@ class Ntuplizer : public edm::EDAnalyzer {
         float _tauPt;
         float _tauEta;
         float _tauPhi;
+        int   _tauCharge;
+        int   _tauDecayMode;
+        float _tauEtaAtEcalEntrance;
+        float _tauPhiAtEcalEntrance;
+        float _tauEtaAtEcalEntranceCheck; // the embedded quantity, as a xcheck for propagation
         float _hltPt;
         float _hltEta;
         float _hltPhi;
@@ -92,6 +106,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         float _muonEta;
         float _muonPhi;
         int _Nvtx;
+        float _rho;
 
         edm::EDGetTokenT<pat::MuonRefVector>  _muonsTag;
         edm::EDGetTokenT<pat::TauRefVector>   _tauTag;
@@ -99,6 +114,7 @@ class Ntuplizer : public edm::EDAnalyzer {
         edm::EDGetTokenT<edm::TriggerResults> _triggerBits;
         edm::EDGetTokenT<l1t::TauBxCollection> _L1TauTag  ;
         edm::EDGetTokenT<std::vector<reco::Vertex>> _VtxTag;
+        edm::EDGetTokenT<double> _rhoTag;
 
         //!Contains the parameters
         tVParameterSet _parameters;
@@ -129,7 +145,8 @@ _tauTag         (consumes<pat::TauRefVector>                      (iConfig.getPa
 _triggerObjects (consumes<pat::TriggerObjectStandAloneCollection> (iConfig.getParameter<edm::InputTag>("triggerSet"))),
 _triggerBits    (consumes<edm::TriggerResults>                    (iConfig.getParameter<edm::InputTag>("triggerResultsLabel"))),
 _L1TauTag       (consumes<l1t::TauBxCollection>                   (iConfig.getParameter<edm::InputTag>("L1Tau"))),
-_VtxTag         (consumes<std::vector<reco::Vertex>>              (iConfig.getParameter<edm::InputTag>("Vertexes")))
+_VtxTag         (consumes<std::vector<reco::Vertex>>              (iConfig.getParameter<edm::InputTag>("Vertexes"))),
+_rhoTag         (consumes<double>                                 (iConfig.getParameter<edm::InputTag>("rho")))
 {
     this -> _treeName = iConfig.getParameter<std::string>("treeName");
     this -> _processName = iConfig.getParameter<edm::InputTag>("triggerResultsLabel");
@@ -222,6 +239,11 @@ void Ntuplizer::beginJob()
     this -> _tree -> Branch("tauPt",  &_tauPt,  "tauPt/F");
     this -> _tree -> Branch("tauEta", &_tauEta, "tauEta/F");
     this -> _tree -> Branch("tauPhi", &_tauPhi, "tauPhi/F");
+    this -> _tree -> Branch("tauCharge", &_tauCharge, "tauCharge/I");
+    this -> _tree -> Branch("tauDecayMode", &_tauDecayMode, "tauDecayMode/I");
+    this -> _tree -> Branch("tauEtaAtEcalEntrance",      &_tauEtaAtEcalEntrance,      "tauEtaAtEcalEntrance/F");
+    this -> _tree -> Branch("tauPhiAtEcalEntrance",      &_tauPhiAtEcalEntrance,      "tauPhiAtEcalEntrance/F");
+    this -> _tree -> Branch("tauEtaAtEcalEntranceCheck", &_tauEtaAtEcalEntranceCheck, "tauEtaAtEcalEntranceCheck/F");
     this -> _tree -> Branch("muonPt",  &_muonPt,  "muonPt/F");
     this -> _tree -> Branch("muonEta", &_muonEta, "muonEta/F");
     this -> _tree -> Branch("muonPhi", &_muonPhi, "muonPhi/F");
@@ -239,6 +261,7 @@ void Ntuplizer::beginJob()
     this -> _tree -> Branch("isOS", &_isOS, "isOS/O");
     this -> _tree -> Branch("foundJet", &_foundJet, "foundJet/I");
     this -> _tree -> Branch("Nvtx", &_Nvtx, "Nvtx/I");
+    this -> _tree -> Branch("rho", &_rho, "rho/F");
 
     return;
 }
@@ -272,12 +295,14 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
     edm::Handle<edm::TriggerResults> triggerBits;
     edm::Handle<std::vector<reco::Vertex> >  vertexes;
+    edm::Handle<double> rho;
 
     iEvent.getByToken(this -> _muonsTag, muonHandle);
     iEvent.getByToken(this -> _tauTag,   tauHandle);
     iEvent.getByToken(this -> _triggerObjects, triggerObjects);
     iEvent.getByToken(this -> _triggerBits, triggerBits);
     iEvent.getByToken(this -> _VtxTag,vertexes);
+    iEvent.getByToken(this -> _rhoTag,rho);
 
 //! TagAndProbe on HLT taus
     const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
@@ -357,13 +382,29 @@ void Ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
     this -> _tauPt = tau -> pt();
     this -> _tauEta = tau -> eta();
     this -> _tauPhi = tau -> phi();
+    this -> _tauCharge = tau -> charge();
+    this -> _tauDecayMode = tau -> decayMode();
 
     this -> _muonPt=muon->pt();
     this -> _muonEta=muon->eta();
     this -> _muonPhi=muon->phi();
 
     this -> _Nvtx = vertexes->size();
+    this -> _rho = *rho;
 
+
+    pair<float,float> etaphiAtEcalEntrance = getEtaPhiAtEcalEntrance(tau, eSetup);
+    this -> _tauEtaAtEcalEntrance = etaphiAtEcalEntrance.first;
+    this -> _tauPhiAtEcalEntrance = etaphiAtEcalEntrance.second;
+    this -> _tauEtaAtEcalEntranceCheck = tau->etaAtEcalEntrance();
+
+    // cout << "DEBUG    : " << tau->etaAtEcalEntrance() << " " << tau->pfEssential().etaAtEcalEntrance_ << " " << etaphiAtEcalEntrance.first  << endl;
+    // cout << " ~~~>    : " << etaphiAtEcalEntrance.second  << endl;
+    // cout << " ... cfr : " << tau->eta() << " " << tau->phi() << endl;
+    // cout << " ??? was a PF tau? " << tau->isPFTau() << endl;
+    // cout << "DEBUG: " << tau->phiAtECalEntrance() << " " << tau->etaAtECalEntrance() << endl;
+    // cout << "DEBUG: " << tau->etaAtEcalEntrance() << " " << tau->pfEssential().etaAtEcalEntrance_ << " " << tau->pfEssential().phiAtEcalEntrance_  << endl;
+    // cout << " ... cfr: " << tau->eta() << " " << tau->phi() << endl;
     //float deltaPt = this -> _hltPt - this -> _tauPt;
     //if (this -> _foundJet > 1 ) std::cout << "deltaPt: " << deltaPt << " con foundJet " << this -> _foundJet << " hltPt " << this -> _hltPt << endl;
 
@@ -394,6 +435,122 @@ bool Ntuplizer::hasFilters(const pat::TriggerObjectStandAlone&  obj , const std:
     }
 
     return true;
+}
+
+// function copied directly from PatTauProducer because only the eta positon is available in CMSSW_8_0_25 (2016 data taking)
+// will get obsolete starting from 81X where phiAtEcalEntrance() and etaAtEcalEntrance() methods are implemented in pat::Tat
+std::pair<float,float> Ntuplizer::getEtaPhiAtEcalEntrance(const pat::TauRef& tau, const edm::EventSetup &iSetup)
+{
+    float etaAtEcalEntrance = -999.;
+    float phiAtEcalEntrance = -999.;
+
+    // if( tau->isPFTau() ) {
+    if (true) {
+        // cout << "/// Entering in the getEtaPhiAtEcalEntrance function when isPFTau was " << tau->isPFTau() << endl;
+        // edm::Handle<reco::PFTauCollection> pfTaus;
+        // iEvent.getByToken(pfTauToken_, pfTaus);
+        // reco::PFTauRef pfTauRef(pfTaus, idx);
+        // pat::tau::TauPFEssential& aTauPFEssential = aTau.pfEssential_[0];
+        // float ecalEnergy = 0;
+        // float hcalEnergy = 0;
+        float sumPhiTimesEnergy = 0.;
+        float sumEtaTimesEnergy = 0.;
+        float sumEnergy = 0.;
+        // float leadChargedCandPt = -99;
+        // float leadChargedCandEtaAtEcalEntrance = -99; 
+        // const std::vector<reco::PFCandidatePtr>& signalCands = tau->signalPFCands();
+        reco::CandidatePtrVector signalCands = tau->signalCands();
+
+        // cout << "/// got the PF cands, their size is " << signalCands.size() << endl;
+
+        // for(reco::CandidatePtrVector::const_iterator it = signalCands.begin(); it != signalCands.end(); ++it) {
+        for (uint idxcand = 0; idxcand < signalCands.size(); ++idxcand)
+        {
+
+
+            // cout << "   ./// got a PF candidate" << endl;
+            const reco::CandidatePtr& icand = signalCands[idxcand];
+            // ecalEnergy += icand->ecalEnergy();
+            // hcalEnergy += icand->hcalEnergy();
+           
+            math::XYZPoint pos;
+            math::XYZTLorentzVector mom;
+
+            // propagate this particle up to the ECAL entrance
+            bool propagated = atECalEntrnce(iSetup, *icand, pos, mom);
+            double candphiAtEcalEntrance = icand->phi();
+            double candetaAtEcalEntrance = icand->eta();
+            if( propagated )
+            {
+                candphiAtEcalEntrance = pos.Phi();
+                candetaAtEcalEntrance = pos.Eta();
+            }
+  
+            // sumPhiTimesEnergy += icand->positionAtECALEntrance().phi()*icand->energy();     
+            // sumEtaTimesEnergy += icand->positionAtECALEntrance().eta()*icand->energy();
+            sumPhiTimesEnergy += candphiAtEcalEntrance*icand->energy();     
+            sumEtaTimesEnergy += candetaAtEcalEntrance*icand->energy();
+            sumEnergy += icand->energy();    
+            // const reco::Track* track = 0;
+            // if ( icand->trackRef().isNonnull() ) track = icand->trackRef().get();
+            // else if ( icand->muonRef().isNonnull() && icand->muonRef()->innerTrack().isNonnull()  ) track = icand->muonRef()->innerTrack().get();
+            // else if ( icand->muonRef().isNonnull() && icand->muonRef()->globalTrack().isNonnull() ) track = icand->muonRef()->globalTrack().get();
+            // else if ( icand->muonRef().isNonnull() && icand->muonRef()->outerTrack().isNonnull()  ) track = icand->muonRef()->outerTrack().get();
+            // else if ( icand->gsfTrackRef().isNonnull() ) track = icand->gsfTrackRef().get();
+            // if( track ) {
+            //     if( track->pt() > leadChargedCandPt ) {
+            //         leadChargedCandEtaAtEcalEntrance = icand->positionAtECALEntrance().eta();
+            //         leadChargedCandPt = track->pt();
+            //     }
+            // }       
+        }
+        
+        if (sumEnergy != 0.) {
+            phiAtEcalEntrance = sumPhiTimesEnergy/sumEnergy;
+            etaAtEcalEntrance = sumEtaTimesEnergy/sumEnergy;
+        }
+        else {
+        phiAtEcalEntrance = -99.;
+        etaAtEcalEntrance = -99.;
+        }
+    }
+
+    return make_pair(etaAtEcalEntrance, phiAtEcalEntrance);
+}
+
+// --- track propagator, Michal Bluji courtesy, to get ECAL entrance position of a tau
+//note that ~5GeV is kind of minimal Pt to reach ECal
+//note should work but in orygianl code outerMomentum used raher than momentun (at vertex) which reduces extrapolation. Especially important for electrons which are bend more than other particles because of energy loss due to breamsthralung
+bool Ntuplizer::atECalEntrnce(const edm::EventSetup &iSetup,
+//           const pat::PackedCandidate &cand,
+           const reco::Candidate &cand,
+           math::XYZPoint &pos,
+           math::XYZTLorentzVector &mom){
+
+  double bField = 3.8;//hepefully Teslas are proper units (better to take it from event setup) 
+  BaseParticlePropagator theParticle =
+    BaseParticlePropagator(RawParticle(math::XYZTLorentzVector(cand.px(),
+                                   cand.py(),
+                                   cand.pz(),
+                                   cand.energy()),
+                                    math::XYZTLorentzVector(cand.vertex().x(),
+                                   cand.vertex().y(),
+                                   cand.vertex().z(),
+                                   0.)),
+               0.,0.,bField);
+  theParticle.setCharge(cand.charge());
+
+  theParticle.propagateToEcalEntrance(false);
+
+  if(theParticle.getSuccess()!=0){
+    pos = math::XYZPoint(theParticle.vertex());
+    mom = math::XYZTLorentzVector(theParticle.momentum());
+    return true;
+  }
+  else 
+    return false;
+
+  //return;
 }
 
 

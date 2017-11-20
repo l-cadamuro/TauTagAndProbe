@@ -1,4 +1,5 @@
 import os
+import argparse
 
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
@@ -24,10 +25,32 @@ def splitInBlocks (l, n):
 
 ###########
 
-njobs = 200
-filelist = open("Data_SingleMu_2016RunB_PromptRecov2_1Luglio.txt")
+parser = argparse.ArgumentParser(description='Command line parser of plotting options')
+parser.add_argument('--filelist', dest='filelist', help='filelist', default=None)
+parser.add_argument('--folder', dest='folder', help='folder', default=None)
+parser.add_argument('--njobs', dest='njobs', help='njobs', type=int, default=None)
+parser.add_argument('--isMC', dest='isMC', help='is MC', action='store_true', default=False)
+args = parser.parse_args()
+
+njobs = 50
+# filelist = open("Data_SingleMu_2016RunB_PromptRecov2_1Luglio.txt")
+flistName = "Data_SingleMu_2016RunB_PromptRecov2_1Luglio.txt"
 folder = "testSubmitT3TAndP2Luglio"
-JSONfile = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt"
+JSONfile = "Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"
+
+if args.njobs:
+    njobs = args.njobs
+if args.filelist:
+    flistName = args.filelist
+if args.folder:
+    folder = args.folder
+
+print "njobs    : " , njobs
+print "filelist : " , flistName
+print "folder   : " , folder
+
+filelist = open(flistName)
+
 ###########
 
 os.system ('source /opt/exp_soft/cms/t3/t3setup')
@@ -50,7 +73,8 @@ for idx, block in enumerate(fileblocks):
     for f in block: jobfilelist.write(f+"\n")
     jobfilelist.close()
 
-    cmsRun = "cmsRun test.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " JSONfile="+JSONfile + " >& " + outLogName
+    if not args.isMC: cmsRun = "cmsRun test.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " JSONfile="+JSONfile + " >& " + outLogName
+    else:             cmsRun = "cmsRun test.py maxEvents=-1 inputFiles_load="+outListName + " outputFile="+outRootName + " >& " + outLogName
     skimjob = open (outJobName, 'w')
     skimjob.write ('#!/bin/bash\n')
     skimjob.write ('export X509_USER_PROXY=~/.t3/proxy.cert\n')
@@ -63,6 +87,6 @@ for idx, block in enumerate(fileblocks):
     skimjob.close ()
 
     os.system ('chmod u+rwx ' + outJobName)
-    command = ('/opt/exp_soft/cms/t3/t3submit -q cms \'' + outJobName +"\'")
+    command = ('/opt/exp_soft/cms/t3/t3submit -long \'' + outJobName +"\'")
     # print command
     os.system (command)
