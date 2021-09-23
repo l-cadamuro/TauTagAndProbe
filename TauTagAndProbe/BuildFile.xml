@@ -3,7 +3,8 @@
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/Candidate"/>
 
-<Flags CPPDEFINES="CMSSW_VERSION=$(shell echo ${CMSSW_VERSION}|sed -e s/CMSSW_// -e s/_//g -e s/patch\.//)"/>
+<Flags CPPDEFINES="CMSSW_VERSION=1102"/>
+
 <export>
   <lib   name="1"/>
 </export>

@@ -1169,37 +1169,37 @@ void ZeroBias::analyze(const edm::Event& iEvent, const edm::EventSetup& eSetup)
   iEvent.getByToken(_piZero_token, piZeroAssoc);
 
 
-  if(jetView.isValid() && chargedHadronAssoc.isValid() && piZeroAssoc.isValid()){
+  // if(jetView.isValid() && chargedHadronAssoc.isValid() && piZeroAssoc.isValid()){
   
-    reco::PFJetRefVector jets = reco::tau::castView<reco::PFJetRefVector>(jetView);
+  //   reco::PFJetRefVector jets = reco::tau::castView<reco::PFJetRefVector>(jetView);
 
-    BOOST_FOREACH( reco::PFJetRef jetRef, jets ) {
+  //   BOOST_FOREACH( reco::PFJetRef jetRef, jets ) {
 
-      //reco::PFJetRef jetRegionRef = (*PFJetRegion_Handle)[jetRef];
-      const std::vector<reco::PFRecoTauChargedHadron>& chargedHadrons = (*chargedHadronAssoc)[jetRef];
-      const std::vector<reco::RecoTauPiZero>& piZeros = (*piZeroAssoc)[jetRef];
+  //     //reco::PFJetRef jetRegionRef = (*PFJetRegion_Handle)[jetRef];
+  //     const std::vector<reco::PFRecoTauChargedHadron>& chargedHadrons = (*chargedHadronAssoc)[jetRef];
+  //     const std::vector<reco::RecoTauPiZero>& piZeros = (*piZeroAssoc)[jetRef];
      
-      /*this -> _hltPFRegCandJetReg_N++;
-      this -> _hltPFRegCandJetReg_Pt.push_back(jetRegionRef->pt());
-      this -> _hltPFRegCandJetReg_Eta.push_back(jetRegionRef->eta());
-      this -> _hltPFRegCandJetReg_Phi.push_back(jetRegionRef->phi());*/
+  //     /*this -> _hltPFRegCandJetReg_N++;
+  //     this -> _hltPFRegCandJetReg_Pt.push_back(jetRegionRef->pt());
+  //     this -> _hltPFRegCandJetReg_Eta.push_back(jetRegionRef->eta());
+  //     this -> _hltPFRegCandJetReg_Phi.push_back(jetRegionRef->phi());*/
 
-      for(unsigned int i_h=0;i_h<chargedHadrons.size();i_h++){
-	_hltTauPFJetsRecoTauChargedHadronsReg_N++;
-	_hltTauPFJetsRecoTauChargedHadronsReg_Pt.push_back(chargedHadrons[i_h].pt());
-	_hltTauPFJetsRecoTauChargedHadronsReg_Eta.push_back(chargedHadrons[i_h].eta());	
-	_hltTauPFJetsRecoTauChargedHadronsReg_Phi.push_back(chargedHadrons[i_h].phi());
-      }
+  //     for(unsigned int i_h=0;i_h<chargedHadrons.size();i_h++){
+  // 	_hltTauPFJetsRecoTauChargedHadronsReg_N++;
+  // 	_hltTauPFJetsRecoTauChargedHadronsReg_Pt.push_back(chargedHadrons[i_h].pt());
+  // 	_hltTauPFJetsRecoTauChargedHadronsReg_Eta.push_back(chargedHadrons[i_h].eta());	
+  // 	_hltTauPFJetsRecoTauChargedHadronsReg_Phi.push_back(chargedHadrons[i_h].phi());
+  //     }
 
-      for(unsigned int i_h=0;i_h<piZeros.size();i_h++){
-	_hltPFTauPiZerosReg_N++;
-	_hltPFTauPiZerosReg_Pt.push_back(piZeros[i_h].pt());
-	_hltPFTauPiZerosReg_Eta.push_back(piZeros[i_h].eta());	
-	_hltPFTauPiZerosReg_Phi.push_back(piZeros[i_h].phi());
-      }   
+  //     for(unsigned int i_h=0;i_h<piZeros.size();i_h++){
+  // 	_hltPFTauPiZerosReg_N++;
+  // 	_hltPFTauPiZerosReg_Pt.push_back(piZeros[i_h].pt());
+  // 	_hltPFTauPiZerosReg_Eta.push_back(piZeros[i_h].eta());	
+  // 	_hltPFTauPiZerosReg_Phi.push_back(piZeros[i_h].phi());
+  //     }   
 
-    }
-  }
+  //   }
+  // }
 
 
   edm::Handle< reco::PFTauCollection > PFTauSansRefReg_Handle;

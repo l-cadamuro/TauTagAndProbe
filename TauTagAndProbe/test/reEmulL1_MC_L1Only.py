@@ -5,7 +5,8 @@ from Configuration.StandardSequences.Eras import eras
 
 isMC = True
 
-process = cms.Process("ZeroBias",eras.Run2_2017)
+process = cms.Process("ZeroBias",eras.Run3)
+#process = cms.Process("ZeroBias",eras.Run2_2017)
 #process = cms.Process("ZeroBias",eras.Run2_2016)
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -80,7 +81,8 @@ if not isMC: # will use 80X
 else: # will use 80X
     from Configuration.AlCa.autoCond import autoCond
     #process.GlobalTag.globaltag = 'auto:run2_mc'
-    process.GlobalTag.globaltag = '92X_upgrade2017_TSG_For90XSamples_V2'
+    process.GlobalTag.globaltag = '110X_mcRun3_2021_realistic_v6'
+    #process.GlobalTag.globaltag = '92X_upgrade2017_TSG_For90XSamples_V2'
     #process.GlobalTag.globaltag = '90X_mcRun2_asymptotic_v0'
     #process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
     #process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_v14'
@@ -91,7 +93,7 @@ else: # will use 80X
     process.load('TauTagAndProbe.TauTagAndProbe.zeroBias_cff')
     process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-            '/store/mc/PhaseISpring17DR/VBFHToTauTau_M125_13TeV_powheg_pythia8/GEN-SIM-RAW/FlatPU28to62HcalNZSRAW_HIG07_90X_upgrade2017_realistic_v20-v1/100000/004D4A52-A62C-E711-B518-848F69FD2853.root',
+            'file:02B68B17-0C3C-0642-B7B2-7BE916547C8B.root',
             #'file:BCB1EC0B-5E26-E611-8240-02163E0145B8.root'
             #'file:0240C947-0CA4-E611-A94C-ECF4BBE1CEB0.root'
             #'file:0A3E7062-D365-E611-BCF4-001EC9AF0377.root'
@@ -109,11 +111,11 @@ if not isMC:
     from L1Trigger.Configuration.customiseReEmul import L1TReEmulFromRAW 
     process = L1TReEmulFromRAW(process)
 else:
-    #from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAW
-    #process = L1TReEmulMCFromRAW(process)
+    from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAW
+    process = L1TReEmulMCFromRAW(process)
 
-    from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFrom90xRAWSimHcalTP
-    process = L1TReEmulMCFrom90xRAWSimHcalTP(process)
+    #from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFrom90xRAWSimHcalTP
+    #process = L1TReEmulMCFrom90xRAWSimHcalTP(process)
 
     #4 lines below were here before
     #from L1Trigger.Configuration.customiseReEmul import L1TReEmulFromRAWsimTP
@@ -122,7 +124,8 @@ else:
     #process = L1TTurnOffUnpackStage2GtGmtAndCalo(process)
 
 
-process.load("L1Trigger.L1TCalorimeter.caloStage2Params_2017_v1_9_inconsistent_mean_cfi")
+process.load("L1Trigger.L1TCalorimeter.caloParams_2018_v1_4_cfi")
+#process.load("L1Trigger.L1TCalorimeter.caloStage2Params_2017_v1_9_inconsistent_mean_cfi")
 #process.load("L1Trigger.L1TCalorimeter.caloStage2Params_2017_v1_4_cfi")
 #process.load("L1Trigger.L1TCalorimeter.caloStage2Params_2017_v1_0_inconsistent_cfi")
 #process.load("L1Trigger.L1TCalorimeter.caloStage2Params_2016_v3_2_cfi")
